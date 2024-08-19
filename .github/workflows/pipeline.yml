@@ -1,15 +1,14 @@
-name: Build and Test
-
+name: Build Test and Deploy
 on:
     push:
-        branches: ['main']
+        branches:
+            - main
     pull_request:
-        branches: ['main']
-
+        branches:
+            - main
 jobs:
     build-and-run-unit-test:
         runs-on: ubuntu-latest
-
         steps:
             - name: Checkout the code
               uses: actions/checkout@v4
@@ -17,7 +16,7 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20.x
-                  cache: 'npm'
+                  cache: npm
             - name: Install npm dependencies
               run: npm install
             - name: Execute the unit tests
@@ -34,7 +33,7 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20.x
-                  cache: 'npm'
+                  cache: npm
             - name: Install npm dependencies
               run: npm install
             - name: Install Playwright
@@ -43,3 +42,12 @@ jobs:
               run: npm run start &
             - name: Execute the ui tests
               run: npm run test:ui
+    build-and-deploy:
+        needs: build-and-run-ui-test
+        runs-on: ubuntu-latest
+        steps:
+            - name: Deploy to production
+              uses: johnbeynon/render-deploy-action@v0.0.8
+              with:
+                  service-id: ${{ secrets.SERVICE_KEY }}
+                  api-key: ${{ secrets.RENDER_API_KEY }}
